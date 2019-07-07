@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>state_estimate_filter_ros</name>
+  <version>0.0.0</version>
+  <description>The state_estimate_filter_ros package</description>
+
+  <maintainer email="p595201m@mail.kyutech.jp">MoriKen254</maintainer>
+
+  <license>BSD</license>
+
+  <author email="p595201m@mail.kyutech.jp">MoriKen254</author>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>eigen</build_depend>
+
+  <depend>denso_moveit</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+
+  <test_depend>roslaunch</test_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

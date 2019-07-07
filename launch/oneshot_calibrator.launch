@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="phoxi_ocs" type="ar_pose_publisher" name="ar_pose_publisher" output="screen" />
+  <node pkg="phoxi_ocs" type="phoxi_pose_publisher" name="phoxi_pose_publisher" output="screen" />
+  <node pkg="phoxi_ocs" type="oneshot_calibrator" name="oneshot_calibrator" output="screen" />
+  <node pkg="phoxi_ocs" type="fixed_phoxi_tf_broadcaster" name="fixed_phoxi_tf_broadcaster" output="screen" />
+</launch>
