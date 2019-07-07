@@ -17,6 +17,13 @@ void StateEstimateFilter::broadcast(void)
   br_.sendTransform(tf::StampedTransform(fixed_phoxi_tf_, ros::Time::now(), "base_link", "fixed_phoxi_tf"));
 }
 
+
+void StateEstimateFilter::estimate(const Eigen::MatrixXd vec_input_curr)
+{
+  this->predict(vec_input_curr);  // 一段先予測
+  this->filter(); // フィルタリング
+}
+
 void StateEstimateFilter::fixedPhoxiPoseCallback(const geometry_msgs::PoseStamped fixed_phoxi_pose)
 {
   init_flg_ = true;

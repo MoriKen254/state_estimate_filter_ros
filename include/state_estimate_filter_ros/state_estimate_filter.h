@@ -5,7 +5,7 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Pose.h>
-#include <Eigen/Core>
+#include <Eigen/Dense>
 
 namespace state_estimate_filter_ros
 {
@@ -13,8 +13,12 @@ class StateEstimateFilter
 {
 public:
   StateEstimateFilter(ros::NodeHandle& nh);
+  virtual ~StateEstimateFilter();
 
   void broadcast(void);
+  void estimate(const Eigen::MatrixXd vec_input_curr);
+  virtual void predict(const Eigen::MatrixXd vec_input_curr) = 0;
+  virtual void filter(void) = 0;
 
 private:
   void fixedPhoxiPoseCallback(const geometry_msgs::PoseStamped fixed_phoxi_pose);
