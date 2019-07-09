@@ -12,7 +12,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>eigen</build_depend>
-
+  <build_depend>geometry_msgs</build_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <depend>roscpp</depend>
 
   <test_depend>roslaunch</test_depend>
