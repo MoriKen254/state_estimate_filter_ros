@@ -14,7 +14,7 @@ catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
     roscpp
-    DEPENDS Eigen3
+    DEPENDS EIGEN3
 )
 
 ###########
@@ -42,7 +42,7 @@ target_link_libraries(particle_filter
 
 add_executable(my_eigen_samples
   src/eigen_samples.cpp)
-target_link_libraries(eigen_samples
+target_link_libraries(my_eigen_samples
   ${Eigen_LIBRARIES})
 
 ###########
