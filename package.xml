@@ -13,7 +13,6 @@
 
   <build_depend>eigen</build_depend>
 
-  <depend>denso_moveit</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
