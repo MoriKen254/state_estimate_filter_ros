@@ -12,6 +12,7 @@ namespace state_estimate_filter_ros
 class StateEstimateFilter
 {
 public:
+  StateEstimateFilter();
   StateEstimateFilter(ros::NodeHandle& nh);
   virtual ~StateEstimateFilter();
 
