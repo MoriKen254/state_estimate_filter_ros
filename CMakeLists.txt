@@ -60,6 +60,17 @@ target_link_libraries(state_estimate_filter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+add_library(particle_filter
+  src/particle_filter.cpp)
+target_link_libraries(particle_filter
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
+add_executable(eigen_samples
+  src/eigen_samples.cpp)
+target_link_libraries(eigen_samples
+  ${Eigen_LIBRARIES})
+
 ###########
 # Install #
 ###########
