@@ -13,13 +13,13 @@ public:  // constructors & destoructors
   ParticleFilter(ros::NodeHandle& nh, const Eigen::MatrixXd system_a, const Eigen::MatrixXd system_b);
 
 public:                                                // methods
-  void predict(const Eigen::MatrixXd vec_input_curr);  // 予測ステップ(事前推定)
+  void predict(const Eigen::MatrixXd input_curr);      // 予測ステップ(事前推定)
   void filter();                                       // フィルタリングステップ(事後推定)
 
 private:
   Eigen::MatrixXd system_a_;
   Eigen::MatrixXd system_b_;
-  double predicted_val_;
+  Eigen::MatrixXd predicted_val_;
 };
 }
 
