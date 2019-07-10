@@ -16,9 +16,9 @@ ParticleFilter::ParticleFilter(ros::NodeHandle& nh, const Eigen::MatrixXd system
 {
 }
 
-void ParticleFilter::predict(const Eigen::MatrixXd vec_input_curr)
+void ParticleFilter::predict(const Eigen::MatrixXd input_curr)
 {
-  // predicted_val = vec_input_curr + system_diff;
+  predicted_val_ = system_a_ * input_curr + system_b_;
 }
 
 void ParticleFilter::filter(void)
