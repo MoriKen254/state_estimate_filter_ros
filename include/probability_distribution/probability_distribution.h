@@ -12,7 +12,7 @@ class ProbabilityDistribution
 {
 public: // constructors & destoructors
   ProbabilityDistribution();
-  virtual ~ProbabilityDistribution();
+  virtual ~ProbabilityDistribution(){}
 
 public: // methods
   virtual Eigen::MatrixXd calcDencityFunction(const Eigen::MatrixXd input) = 0;
