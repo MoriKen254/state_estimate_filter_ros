@@ -18,6 +18,7 @@ find_package(Eigen3 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
     DEPENDS EIGEN3
@@ -59,6 +60,14 @@ target_link_libraries(normal_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+add_executable(probability_distribution_run
+  src/probability_distribution/probability_distribution_run.cpp
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp)
+target_link_libraries(probability_distribution_run
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
 add_executable(my_eigen_samples
   src/eigen_samples.cpp)
 target_link_libraries(my_eigen_samples
@@ -71,7 +80,8 @@ target_link_libraries(my_eigen_samples
 set(BUILT_FILES
   state_estimate_filter
   particle_filter
-  my_eigen_samples)
+  my_eigen_samples
+  probability_distribution_run)
 
 set(DIRECTORIES
   launch)
@@ -99,6 +109,20 @@ endforeach()
 #############
 
 if(CATKIN_ENABLE_TESTING)
-  find_package(roslaunch REQUIRED)
+  find_package(catkin REQUIRED COMPONENTS
+    roscpp
+    rostest
+    roslaunch
+  )
+
   roslaunch_add_file_check(launch)
+
+  add_rostest_gtest(probability_distribution_test
+    test/probability_distribution.test
+    test/probability_distribution_test.cpp
+    src/probability_distribution/normal_distribution.cpp
+    src/probability_distribution/probability_distribution.cpp)
+  target_link_libraries(probability_distribution_test
+      ${catkin_LIBRARIES})
+
 endif()
