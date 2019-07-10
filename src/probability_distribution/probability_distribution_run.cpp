@@ -1,10 +1,13 @@
 #include <probability_distribution/normal_distribution.h>
 #include <probability_distribution/depth_sensor_distribution.h>
+#include <matplotlibcpp/matplotlibcpp.h>
 
 using probability_distribution::ProbabilityDistribution;
 using probability_distribution::NormalDistribution;
 using probability_distribution::DepthSensorDistribution;
 using Eigen::MatrixXd;
+
+namespace plt = matplotlibcpp;
 
 // TEST CASES
 double run_normal(void)
@@ -37,6 +40,14 @@ double run_depth(void)
   return result;
 }
 
+void run_matplot(void)
+{
+  int x[4] = {1,2,3,4};
+  int y[4] = {1,3,2,4};
+  plt::plot(x, y, "r--");
+  plt::show();
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "probability_distribution_test");
@@ -45,6 +56,7 @@ int main(int argc, char** argv)
   spinner.start();
   double ret_normal = run_normal();
   double ret_depth = run_depth();
+  run_matplot();
   std::cout << ret_normal << std::endl;
   std::cout << ret_depth << std::endl;
   spinner.stop();

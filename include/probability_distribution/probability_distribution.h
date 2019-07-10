@@ -2,8 +2,6 @@
 #define PROBABILITY_DISTRIBUTION_H
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <Eigen/Dense>
 
 namespace probability_distribution
