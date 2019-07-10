@@ -5,7 +5,7 @@
 
 namespace probability_distribution
 {
-class NormalDistribution : ProbabilityDistribution
+class NormalDistribution : public ProbabilityDistribution
 {
 public: // constructors & destoructors
   NormalDistribution();
