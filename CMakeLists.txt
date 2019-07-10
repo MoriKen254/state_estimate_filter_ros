@@ -46,9 +46,16 @@ target_link_libraries(particle_filter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+# probability distribution
 add_library(probability_distribution
   src/probability_distribution/probability_distribution.cpp)
 target_link_libraries(probability_distribution
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
+add_library(normal_distribution
+  src/probability_distribution/normal_distribution.cpp)
+target_link_libraries(normal_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
