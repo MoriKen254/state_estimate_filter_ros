@@ -10,18 +10,19 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   roscpp
 )
 
 find_package(Eigen3 REQUIRED)
+
+find_package(PythonLibs REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
-    DEPENDS EIGEN3
+    DEPENDS EIGEN3 PYTHON
 )
 
 ###########
@@ -31,7 +32,8 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS})
+  ${EIGEN3_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS})
 
 add_definitions(${EIGEN3_DEFINITIONS})
 
@@ -73,7 +75,8 @@ add_executable(probability_distribution_run
   src/probability_distribution/probability_distribution.cpp)
 target_link_libraries(probability_distribution_run
   ${catkin_LIBRARIES}
-  ${Eigen_LIBRARIES})
+  ${Eigen_LIBRARIES}
+  ${PYTHON_LIBRARIES})
 
 add_executable(my_eigen_samples
   src/eigen_samples.cpp)
