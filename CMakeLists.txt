@@ -60,9 +60,16 @@ target_link_libraries(normal_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+add_library(depth_sensor_distribution
+  src/probability_distribution/depth_sensor_distribution.cpp)
+target_link_libraries(depth_sensor_distribution
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
 add_executable(probability_distribution_run
   src/probability_distribution/probability_distribution_run.cpp
   src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/depth_sensor_distribution.cpp
   src/probability_distribution/probability_distribution.cpp)
 target_link_libraries(probability_distribution_run
   ${catkin_LIBRARIES}
