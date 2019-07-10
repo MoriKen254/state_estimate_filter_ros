@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(state_estimate_filter_ros)
 
+# Default to C++11
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -38,6 +43,12 @@ target_link_libraries(state_estimate_filter
 add_library(particle_filter
   src/particle_filter.cpp)
 target_link_libraries(particle_filter
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
+add_library(probability_distribution
+  src/probability_distribution/probability_distribution.cpp)
+target_link_libraries(probability_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
