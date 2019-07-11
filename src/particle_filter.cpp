@@ -1,8 +1,14 @@
 #include <state_estimate_filter_ros/particle_filter.h>
 
 using state_estimate_filter_ros::ParticleFilter;
+using state_estimate_filter_ros::Particle;
+using Eigen::MatrixXd;
 
 // Class methods definitions
+Particle::Particle() : state_(MatrixXd::Zero(0, 0)), weight_(MatrixXd::Zero(0, 0))
+{
+}
+
 ParticleFilter::ParticleFilter() : StateEstimateFilter()
 {
 }
