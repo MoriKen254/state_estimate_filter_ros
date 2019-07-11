@@ -30,6 +30,7 @@ private:
   Eigen::MatrixXd system_a_;
   Eigen::MatrixXd system_b_;
   Eigen::MatrixXd predicted_val_;
+  std::vector<Particle> particles_;
 };
 }
 
