@@ -29,7 +29,8 @@
             <stddev>0.005</stddev>
           </noise>
         </camera>
-        <plugin name="${name}_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <!--plugin name="${name}_camera_controller" filename="libgazebo_ros_openni_kinect.so"-->
+        <plugin name="${name}_camera_controller" filename="libgazebo_ros_depth_camera.so">
           <cameraName>${name}/hd</cameraName>
           <alwaysOn>true</alwaysOn>
           <updateRate>30</updateRate>
