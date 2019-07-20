@@ -10,19 +10,22 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  cv_bridge
+  image_transport
   roscpp
+  sensor_msgs
 )
 
 find_package(Eigen3 REQUIRED)
-
 find_package(PythonLibs REQUIRED)
+find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
-    DEPENDS EIGEN3 PYTHON
+  DEPENDS EIGEN3 OpenCV
 )
 
 ###########
@@ -33,54 +36,61 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${PYTHON_INCLUDE_DIRS})
 
 add_definitions(${EIGEN3_DEFINITIONS})
 
-add_library(state_estimate_filter
+add_library(${PROJECT_NAME}_state_estimate_filter
   src/state_estimate_filter.cpp)
-target_link_libraries(state_estimate_filter
+target_link_libraries(${PROJECT_NAME}_state_estimate_filter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
-add_library(particle_filter
+add_library(${PROJECT_NAME}_particle_filter
   src/particle_filter.cpp)
-target_link_libraries(particle_filter
+target_link_libraries(${PROJECT_NAME}_particle_filter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
 # probability distribution
-add_library(probability_distribution
+add_library(${PROJECT_NAME}_probability_distribution
   src/probability_distribution/probability_distribution.cpp)
-target_link_libraries(probability_distribution
+target_link_libraries(${PROJECT_NAME}_probability_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
-add_library(normal_distribution
+add_library(${PROJECT_NAME}_normal_distribution
   src/probability_distribution/normal_distribution.cpp)
-target_link_libraries(normal_distribution
+target_link_libraries(${PROJECT_NAME}_normal_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
-add_library(depth_sensor_distribution
+add_library(${PROJECT_NAME}_depth_sensor_distribution
   src/probability_distribution/depth_sensor_distribution.cpp)
-target_link_libraries(depth_sensor_distribution
+target_link_libraries(${PROJECT_NAME}_depth_sensor_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
-add_executable(probability_distribution_run
-  src/probability_distribution/probability_distribution_run.cpp
-  src/probability_distribution/normal_distribution.cpp
+add_executable(${PROJECT_NAME}_image_noise_mixer
+  src/image_noise_mixer/image_noise_mixer.cpp)
+target_link_libraries(${PROJECT_NAME}_image_noise_mixer
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES})
+
+add_executable(${PROJECT_NAME}_probability_distribution_run
   src/probability_distribution/depth_sensor_distribution.cpp
-  src/probability_distribution/probability_distribution.cpp)
-target_link_libraries(probability_distribution_run
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp
+  src/probability_distribution/probability_distribution_run.cpp)
+target_link_libraries(${PROJECT_NAME}_probability_distribution_run
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES}
   ${PYTHON_LIBRARIES})
 
-add_executable(my_eigen_samples
+add_executable(${PROJECT_NAME}_my_eigen_samples
   src/eigen_samples.cpp)
-target_link_libraries(my_eigen_samples
+target_link_libraries(${PROJECT_NAME}_my_eigen_samples
   ${Eigen_LIBRARIES})
 
 ###########
@@ -88,10 +98,11 @@ target_link_libraries(my_eigen_samples
 ###########
 
 set(BUILT_FILES
-  state_estimate_filter
-  particle_filter
-  my_eigen_samples
-  probability_distribution_run)
+  ${PROJECT_NAME}_state_estimate_filter
+  ${PROJECT_NAME}_particle_filter
+  ${PROJECT_NAME}_my_eigen_samples
+  ${PROJECT_NAME}_image_noise_mixer
+  ${PROJECT_NAME}_probability_distribution_run)
 
 set(DIRECTORIES
   launch)
@@ -121,11 +132,11 @@ endforeach()
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS
     roscpp
-    rostest
     roslaunch
+    rostest
   )
 
-  roslaunch_add_file_check(launch)
+#roslaunch_add_file_check(launch)
 
   add_rostest_gtest(probability_distribution_test
     test/probability_distribution.test

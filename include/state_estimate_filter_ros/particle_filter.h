@@ -5,6 +5,16 @@
 
 namespace state_estimate_filter_ros
 {
+class Particle
+{
+public:
+  Particle();
+
+public: // instead of property ...
+  Eigen::MatrixXd state_;
+  Eigen::MatrixXd weight_;
+};
+
 class ParticleFilter : StateEstimateFilter
 {
 public:  // constructors & destoructors
@@ -20,6 +30,7 @@ private:
   Eigen::MatrixXd system_a_;
   Eigen::MatrixXd system_b_;
   Eigen::MatrixXd predicted_val_;
+  std::vector<Particle> particles_;
 };
 }
 

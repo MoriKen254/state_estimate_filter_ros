@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="state_estimate_filter_ros" type="my_eigen_samples" name="my_eigen_samples" output="screen" />
+</launch>

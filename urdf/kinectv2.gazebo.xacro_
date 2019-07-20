@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<robot name="vs087" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find state_estimate_filter_ros)/urdf/kinectv2.urdf.xacro"/>
+  <xacro:include filename="$(find state_estimate_filter_ros)/urdf/kinectv2.gazebo.macro.xacro"/>
+
+  <!-- Gazebo -->
+  <xacro:kinect_gazebo name="kinect2"/>
+</robot>
