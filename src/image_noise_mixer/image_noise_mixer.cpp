@@ -2,6 +2,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <random>
+#include <chrono>
 
 using image_noise_mixer::ImageNoiseMixer;
 
@@ -76,17 +78,49 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv_img_ori_f_ptr->image.convertTo(cv_img_ori_u, CV_8UC1, 255.0/max_f);
 
   cv::Mat cv_img_only_noise(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, CV_32FC1);
-  cv::Mat cv_img_noise_mixed_u(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, CV_8UC1);
+  cv::Mat cv_img_noise_mixed_u = cv_img_ori_u.clone();
 
   cv::randn(cv_img_only_noise, 0., 50.);
   cv::Mat cv_img_only_noise_u(cv_img_only_noise.rows, cv_img_only_noise.cols, CV_8UC1);
   cv_img_only_noise.convertTo(cv_img_only_noise_u, CV_8UC1);
 
-  cv_img_noise_mixed_u = cv_img_ori_u + cv_img_only_noise_u;
+  //cv_img_noise_mixed_u = cv_img_ori_u + cv_img_only_noise_u;
 
   cv::Mat cv_img_edge_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
 
-  cv::Sobel(cv_img_noise_mixed_u, cv_img_edge_u, CV_8UC1, 1, 1, 3);
+  cv::Mat cv_img_ori_blur_u(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, CV_8U);
+  cv::blur(cv_img_ori_u, cv_img_ori_blur_u, cv::Size(3, 3));
+  //cv::Sobel(cv_img_ori_u, cv_img_edge_u, CV_8UC1, 1, 1, 5);
+  //cv::Laplacian(cv_img_ori_blur_u, cv_img_edge_u, CV_8UC1);
+  cv::Laplacian(cv_img_ori_u, cv_img_edge_u, CV_8UC1);
+
+  cv::Mat cv_img_bin_u = cv::Mat::zeros(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+
+  cv::threshold(cv_img_edge_u, cv_img_bin_u, 1, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+  cv::Mat cv_img_edge_expand_u = cv::Mat::zeros(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+
+  for(int y = 0; y < height; y++)
+  {
+    for(int x = 0; x < width; x++)
+    {
+      uchar edge_val = cv_img_edge_u.at<uchar>(y, x);
+      if(edge_val == 0 || edge_val == 1)
+        continue;
+
+      cv::RNG rng(static_cast<uint64>(clock()));
+      double rand_gau = 10 * rng.gaussian(edge_val) * static_cast<double>(edge_val); //標準偏差を指定．
+      //cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(std::min(edge_val + rand_gau, 255));
+      cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(edge_val + rand_gau);
+
+      //int noise = static_cast<int>(std::min<double>(rand_gau, 10.0));
+      std::default_random_engine generator;
+      generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+      std::normal_distribution<double> distribution(edge_val/2, 10.0);
+      double noise = distribution(generator);
+      cv_img_noise_mixed_u.at<uchar>(y, x) = static_cast<uchar>(std::max<uchar>(0, cv_img_ori_u.at<uchar>(y, x) + noise));
+    }
+  }
 
   auto a = cv_img_ori_f_ptr->image.at<unsigned char>(250, 200);
   auto b = cv_img_ori_u.at<unsigned char>(250, 200);
@@ -96,9 +130,12 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   auto f = cv_img_edge_u.at<unsigned char>(250, 200);
 
   cv::imshow("cv_img_ori_u", cv_img_ori_u);
+  //cv::imshow("cv_img_ori_blur_u", cv_img_ori_blur_u);
   cv::imshow("cv_img_only_noise_u", cv_img_only_noise_u);
   cv::imshow("cv_img_noise_mixed_u", cv_img_noise_mixed_u);
   cv::imshow("cv_img_edge_u", cv_img_edge_u);
+  cv::imshow("cv_img_edge_expand_u", cv_img_edge_expand_u);
+  //cv::imshow("cv_img_bin_u", cv_img_bin_u);
 
   // publisher
   sensor_msgs::ImagePtr msg_img_noise_mixed;
