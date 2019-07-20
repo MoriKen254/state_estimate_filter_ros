@@ -25,7 +25,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
-  DEPENDS EIGEN3 OpenCV PYTHON
+  DEPENDS EIGEN3 OpenCV PythonLibs
 )
 
 ###########
@@ -79,10 +79,10 @@ target_link_libraries(${PROJECT_NAME}_image_noise_mixer
   ${OpenCV_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_probability_distribution_run
-  src/probability_distribution/probability_distribution_run.cpp
-  src/probability_distribution/normal_distribution.cpp
   src/probability_distribution/depth_sensor_distribution.cpp
-  src/probability_distribution/probability_distribution.cpp)
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp
+  src/probability_distribution/probability_distribution_run.cpp)
 target_link_libraries(${PROJECT_NAME}_probability_distribution_run
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES}
@@ -101,6 +101,7 @@ set(BUILT_FILES
   ${PROJECT_NAME}_state_estimate_filter
   ${PROJECT_NAME}_particle_filter
   ${PROJECT_NAME}_my_eigen_samples
+  ${PROJECT_NAME}_image_noise_mixer
   ${PROJECT_NAME}_probability_distribution_run)
 
 set(DIRECTORIES
@@ -131,8 +132,8 @@ endforeach()
 if(CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS
     roscpp
-    rostest
     roslaunch
+    rostest
   )
 
 #roslaunch_add_file_check(launch)
