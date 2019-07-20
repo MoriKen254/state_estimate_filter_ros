@@ -25,7 +25,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
-  DEPENDS EIGEN3 OpenCV PythonLibs
+  DEPENDS EIGEN3 OpenCV
 )
 
 ###########
