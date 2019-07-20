@@ -7,7 +7,7 @@
   <arg name="robot_description" value="$(arg robot_name)_description" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <!--arg name="world_name" value="$(find state_estimate_filter_ros)/worlds/denso.world"/-->
+    <arg name="world_name" value="$(find state_estimate_filter_ros)/worlds/cylinder.world"/>
   </include>
 
   <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
