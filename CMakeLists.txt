@@ -22,7 +22,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
-    DEPENDS EIGEN3 PYTHON
+    DEPENDS EIGEN3 PythonLibs
 )
 
 ###########
@@ -125,7 +125,7 @@ if(CATKIN_ENABLE_TESTING)
     roslaunch
   )
 
-  roslaunch_add_file_check(launch)
+#roslaunch_add_file_check(launch)
 
   add_rostest_gtest(probability_distribution_test
     test/probability_distribution.test
