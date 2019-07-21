@@ -84,16 +84,18 @@ int main(int argc, char** argv)
   ros::Rate loop_rate(1000);
 
   MatrixXd input(1, 1);
+  MatrixXd obs_curr(1, 1);
   input(0, 0) = 0.0;
 
   std::vector<double> estimate;
   int step_curr = 0;
   while (ros::ok())
   {
+    obs_curr(0, 0) = observation[step_curr];
     if(step_curr++ == step)
       break;
 
-    particle_filter->estimate(input);
+    particle_filter->estimate(input, obs_curr);
     estimate.push_back(particle_filter->vec_estimate_curr_(0, 0));
     ros::spinOnce();
     loop_rate.sleep();
