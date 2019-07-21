@@ -120,4 +120,19 @@ void ParticleFilter::filter(const MatrixXd vec_observation_curr)
   vec_estimate_prev_ = vec_estimate_curr_;
   vec_predict_prev_ = vec_predict_curr_;
 
+  // ESS
+  MatrixXd ess_den(1, 1);
+  ess_den(0, 0) = 0.0;
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    ess_den += itr->weight_ * itr->weight_;
+  }
+
+  MatrixXd ess(1, 1);
+  ess(0, 0) = 1.0 / ess_den(0, 0);
+
+  // if ess is small enough, go to resample step
+  if (ess(0, 0) > particles_.size() * 0.33)
+    return;
+
 }
