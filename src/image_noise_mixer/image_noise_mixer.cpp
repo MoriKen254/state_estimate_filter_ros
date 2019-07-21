@@ -285,7 +285,7 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_edge_expand_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_edge_expand_u);
   //cv::imshow("cv_img_bin_u", cv_img_bin_u);
   cv::imshow("cv_img_filtered_u", cv_img_filtered_u);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_u);
   cv::imshow("cv_img_filtered_f", cv_img_filtered_f);
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_f);
 
