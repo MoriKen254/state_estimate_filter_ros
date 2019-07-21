@@ -148,4 +148,24 @@ void ParticleFilter::filter(const MatrixXd vec_observation_curr)
     cumulativeSumsWeight.push_back(sum_tmp);
   }
 
+  // RecampleID
+  MatrixXd perParticleNum(1, 1);
+  perParticleNum(0, 0) = 1.0 / static_cast<double>(particles_.size());
+
+  std::vector<MatrixXd> cumulativeSumsID;
+  for(int i = 0; i < particles_.size(); ++i)
+  {
+    MatrixXd sum_tmp(1, 1);
+    sum_tmp = perParticleNum * i;
+    cumulativeSumsID.push_back(sum_tmp);
+  }
+
+  std::vector<MatrixXd>::iterator itr_id;
+  for (itr_id = cumulativeSumsID.begin(); itr_id != cumulativeSumsID.end(); ++itr_id)
+  {
+    double random = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
+    // 等間隔累積に乱数を加える
+    *itr_id = *itr_id + random * perParticleNum;
+  }
+
 }
