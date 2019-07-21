@@ -147,10 +147,10 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
       if(x >= width / 2 && cv_img_ori_u.at<uchar>(y, x) > 120)//70)
         continue;
 
-      cv::RNG rng(static_cast<uint64>(clock()));
-      double rand_gau = 10 * rng.gaussian(edge_val) * static_cast<double>(edge_val); //標準偏差を指定．
-      //cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(std::min(edge_val + rand_gau, 255));
-      cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(edge_val + rand_gau);
+      //cv::RNG rng(static_cast<uint64>(clock()));
+      //double rand_gau = 10 * rng.gaussian(edge_val) * static_cast<double>(edge_val); //標準偏差を指定．
+      ////cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(std::min(edge_val + rand_gau, 255));
+      //cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(edge_val + rand_gau);
 
       //int noise = static_cast<int>(std::min<double>(rand_gau, 10.0));
       std::default_random_engine generator;
@@ -179,11 +179,12 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
         uchar m = n;
       }
 
-      if(candidate > 190)
-        continue;
+      //if(candidate > 190)
+      //  continue;
 
 
       cv_img_noise_mixed_u.at<uchar>(y, x) = candidate;
+      cv_img_edge_expand_u.at<uchar>(y, x) = candidate;
     }
   }
 
