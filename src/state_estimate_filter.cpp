@@ -16,6 +16,8 @@ StateEstimateFilter::StateEstimateFilter(ros::NodeHandle& nh) : nh_(nh)
 {
   vec_estimate_prev_ = MatrixXd::Zero(1, 1);
   vec_estimate_curr_ = MatrixXd::Zero(1, 1);
+  vec_predict_prev_ = MatrixXd::Zero(1, 1);
+  vec_predict_curr_ = MatrixXd::Zero(1, 1);
 }
 
 void StateEstimateFilter::setInitVal(const MatrixXd vec_init_val)

@@ -51,8 +51,21 @@ void ParticleFilter::initParicles(const int num, const MatrixXd state, const Mat
 void ParticleFilter::predict(const MatrixXd input_curr)
 {
   MatrixXd noise(1, 1);
-  noise(0, 0) = dist_system_(gen_system_);
-  vec_predict_curr_ = system_a_ * vec_estimate_prev_ + system_b_ * input_curr + system_c_ + noise;
+
+  std::vector<Particle>::iterator itr = particles_.begin();
+
+  // int i = 0;
+  double sum = 0;
+  for(; itr != particles_.end(); ++itr)
+  {
+    noise(0, 0) = dist_system_(gen_system_);
+    // std::cout << "prev: particle[" << i << "] ..." << itr->state_ << std::endl;
+    itr->state_ = system_a_ * itr->state_ + system_b_ * input_curr + system_c_ + noise;
+    // std::cout << "curr: particle[" << i << "] ..." << itr->state_ << std::endl;
+    sum += itr->state_(0, 0);
+  }
+  vec_predict_curr_(0, 0) = sum / static_cast<double>(particles_.size());
+  //vec_predict_curr_ = system_a_ * itr->state_ + system_b_ * input_curr + system_c_ + noise;
 }
 
 void ParticleFilter::filter(void)
