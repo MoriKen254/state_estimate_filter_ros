@@ -135,4 +135,17 @@ void ParticleFilter::filter(const MatrixXd vec_observation_curr)
   if (ess(0, 0) > particles_.size() * 0.33)
     return;
 
+  // cumulativeSum of weight
+  std::vector<MatrixXd> cumulativeSumsWeight;
+  itr = particles_.begin();
+  cumulativeSumsWeight.push_back(itr->weight_);
+  ++itr;
+
+  for(int i = 0; itr != particles_.end(); ++itr, ++i)
+  {
+    MatrixXd sum_tmp(1, 1);
+    sum_tmp = cumulativeSumsWeight[i] + itr->weight_;
+    cumulativeSumsWeight.push_back(sum_tmp);
+  }
+
 }
