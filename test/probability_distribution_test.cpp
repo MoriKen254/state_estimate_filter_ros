@@ -10,7 +10,12 @@ const double EPS = 0.01;
 // TEST CASES
 TEST(ProbabilityDistributionTest, testNormal)
 {
-  ProbabilityDistribution* prob_dis = new NormalDistribution();
+
+  MatrixXd variance(1, 1);
+  variance(0, 0) = 4.0;
+  MatrixXd mean(1, 1);
+  mean(0, 0) = 0.0;
+  ProbabilityDistribution* prob_dis = new NormalDistribution(mean, variance);
 
   MatrixXd input(1, 1);
   input(0, 0) = 1.5;
