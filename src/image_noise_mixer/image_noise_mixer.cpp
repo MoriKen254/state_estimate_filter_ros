@@ -152,10 +152,19 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
       ////cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(std::min(edge_val + rand_gau, 255));
       //cv_img_edge_expand_u.at<uchar>(y, x) = static_cast<uchar>(edge_val + rand_gau);
 
+      // judge whether noise will be added or not in this step
+      std::default_random_engine generator_judge;
+      generator_judge.seed(std::chrono::system_clock::now().time_since_epoch().count());
+      std::normal_distribution<double> distribution_judge(0.0, 1.0);
+      double val_judge = distribution_judge(generator_judge);
+      // judge < 0 (50%): no noise added, 0 <= judge < 1 (34%): no noise added
+      if(val_judge < 1) // noise adding condition (16%)
+        continue;
+
       //int noise = static_cast<int>(std::min<double>(rand_gau, 10.0));
       std::default_random_engine generator;
       generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
-      std::normal_distribution<double> distribution(edge_val, 10.0);
+      std::normal_distribution<double> distribution(edge_val, 5.0);
       double noise = distribution(generator);
       uchar candidate;
       uint update_idx_x, update_idx_y;
