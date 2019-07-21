@@ -168,4 +168,15 @@ void ParticleFilter::filter(const MatrixXd vec_observation_curr)
     *itr_id = *itr_id + random * perParticleNum;
   }
 
+  // Actual resamping
+  int new_index = 0;
+  for (int i = 0; i < particles_.size(); ++i)
+  {
+    while(cumulativeSumsID[i](0, 0) > cumulativeSumsWeight[new_index](0, 0))
+      ++new_index;
+
+    // update particle
+    particles_[i] = particles_[new_index];
+    particles_[i].weight_ = perParticleNum;
+  }
 }
