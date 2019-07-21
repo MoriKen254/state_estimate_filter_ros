@@ -9,13 +9,14 @@ using probability_distribution::NormalDistribution;
 using probability_distribution::ProbabilityDistribution;
 
 // Class methods definitions
-Particle::Particle() : state_(MatrixXd::Zero(0, 0)), weight_(MatrixXd::Zero(0, 0))
+Particle::Particle() : state_(MatrixXd::Zero(1, 1)), weight_(MatrixXd::Zero(1, 1)), logDencity_(MatrixXd::Zero(1, 1))
 {
 }
 
 Particle::Particle(MatrixXd state, MatrixXd weight)
   : state_(state), weight_(weight)
 {
+  logDencity_ = MatrixXd::Zero(1, 1);
 }
 
 ParticleFilter::ParticleFilter() : StateEstimateFilter()
@@ -44,11 +45,9 @@ void ParticleFilter::initParicles(const int num, const MatrixXd state, const Mat
   {
     particles_.push_back(Particle(state, weight));
   }
-  int a = 0;
-
 }
 
-void ParticleFilter::predict(const MatrixXd input_curr)
+void ParticleFilter::predict(const MatrixXd vec_input_curr)
 {
   MatrixXd noise(1, 1);
 
@@ -60,7 +59,7 @@ void ParticleFilter::predict(const MatrixXd input_curr)
   {
     noise(0, 0) = dist_system_(gen_system_);
     // std::cout << "prev: particle[" << i << "] ..." << itr->state_ << std::endl;
-    itr->state_ = system_a_ * itr->state_ + system_b_ * input_curr + system_c_ + noise;
+    itr->state_ = system_a_ * itr->state_ + system_b_ * vec_input_curr + system_c_ + noise;
     // std::cout << "curr: particle[" << i << "] ..." << itr->state_ << std::endl;
     sum += itr->state_(0, 0);
   }
@@ -68,9 +67,57 @@ void ParticleFilter::predict(const MatrixXd input_curr)
   //vec_predict_curr_ = system_a_ * itr->state_ + system_b_ * input_curr + system_c_ + noise;
 }
 
-void ParticleFilter::filter(void)
+void ParticleFilter::filter(const MatrixXd vec_observation_curr)
 {
-  vec_estimate_curr_ = vec_predict_curr_;
+  MatrixXd variance(1, 1);
+  variance(0, 0) = 5*5;
+
+  ProbabilityDistribution* prob_dis = new NormalDistribution(vec_observation_curr, variance);
+
+  MatrixXd log_dencity_max(1, 1);
+  log_dencity_max(0, 0) = 0.0;
+
+  std::vector<Particle>::iterator itr;
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    itr->logDencity_ = prob_dis->calcLogDencityFunction(itr->state_);
+    if (itr->logDencity_(0, 0) > log_dencity_max(0, 0))
+      log_dencity_max = itr->logDencity_;
+  }
+
+  MatrixXd log_dencity_sum(1, 1);
+  log_dencity_sum(0, 0) = 0.0;
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    itr->weight_ = itr->logDencity_ - log_dencity_max;
+    log_dencity_sum += itr->weight_;
+  }
+
+  // normalize
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    itr->weight_(0, 0) = itr->weight_(0, 0) / log_dencity_sum(0, 0);
+  }
+
+  /*
+  // just for check
+  MatrixXd weight_sum(1, 1);
+  weight_sum(0, 0) = 0.0;
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    weight_sum += itr->weight_;
+  }
+  */
+
+  // estimation
+  vec_estimate_curr_(0, 0) = 0.0;
+  for(itr = particles_.begin(); itr != particles_.end(); ++itr)
+  {
+    vec_estimate_curr_ = vec_estimate_curr_ + itr->weight_ * itr->state_;
+  }
+
+  //vec_estimate_curr_ = vec_predict_curr_;
   vec_estimate_prev_ = vec_estimate_curr_;
   vec_predict_prev_ = vec_predict_curr_;
+
 }

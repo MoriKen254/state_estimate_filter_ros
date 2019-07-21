@@ -15,6 +15,7 @@ public:
 public: // instead of property ...
   Eigen::MatrixXd state_;
   Eigen::MatrixXd weight_;
+  Eigen::MatrixXd logDencity_;
 };
 
 class ParticleFilter : public StateEstimateFilter
@@ -27,8 +28,8 @@ public:  // constructors & destoructors
                  const int num_particle, const Eigen::MatrixXd state, const Eigen::MatrixXd weight);
 
 public:                                                // methods
-  void predict(const Eigen::MatrixXd input_curr);      // 予測ステップ(事前推定)
-  void filter();                                       // フィルタリングステップ(事後推定)
+  void predict(const Eigen::MatrixXd vec_input_curr);      // 予測ステップ(事前推定)
+  void filter(const Eigen::MatrixXd vec_observation_curr);                                       // フィルタリングステップ(事後推定)
 
 private:
   void initParicles(const int num, const Eigen::MatrixXd state, const Eigen::MatrixXd weight);
