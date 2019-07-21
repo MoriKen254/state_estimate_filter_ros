@@ -145,9 +145,9 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     MatrixXd system_c(1, 1);
     system_a(0, 0) = 1.0;
     system_b(0, 0) = 0.0;
-    system_c(0, 0) = 1.0;
+    system_c(0, 0) = 0.0;
 
-    int num_particle = 100;
+    int num_particle = 50;
     MatrixXd vec_weight(1, 1);
     vec_weight(0, 0) = 1.0/static_cast<double>(num_particle);
 
@@ -159,7 +159,7 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     {
       for(int x = 0; x < width; x++)
       {
-        vec_init_val(0, 0) = cv_img_ori_f.at<float>(y, x);
+        vec_init_val(0, 0) = static_cast<float>(cv_img_ori_u.at<uchar>(y, x));
         StateEstimateFilter* particle_filter = new ParticleFilter(nh_,
                                                                   system_a, system_b, system_c,
                                                                   num_particle, vec_init_val, vec_weight);
@@ -251,6 +251,7 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     for(int x = 0; x < width; x++)
     {
 #if 1
+      uchar a = cv_img_noise_mixed_u.at<uchar>(y, x);
       vec_obs_curr(0, 0) = cv_img_noise_mixed_f.at<float>(y, x);
 
       int index = x + y * width;
@@ -283,6 +284,8 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::imshow("cv_img_edge_expand_u", cv_img_edge_expand_u);
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_edge_expand_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_edge_expand_u);
   //cv::imshow("cv_img_bin_u", cv_img_bin_u);
+  cv::imshow("cv_img_filtered_u", cv_img_filtered_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_u);
   cv::imshow("cv_img_filtered_f", cv_img_filtered_f);
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_f);
 
