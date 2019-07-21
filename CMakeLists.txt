@@ -93,6 +93,16 @@ add_executable(${PROJECT_NAME}_my_eigen_samples
 target_link_libraries(${PROJECT_NAME}_my_eigen_samples
   ${Eigen_LIBRARIES})
 
+add_executable(${PROJECT_NAME}_state_estimate_filter_node
+  src/particle_filter.cpp
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp
+  src/state_estimate_filter.cpp
+  src/state_estimate_filter_node.cpp)
+target_link_libraries(${PROJECT_NAME}_state_estimate_filter_node
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
 ###########
 # Install #
 ###########
