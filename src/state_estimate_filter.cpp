@@ -25,8 +25,8 @@ void StateEstimateFilter::setInitVal(const MatrixXd vec_init_val)
   vec_estimate_curr_ = vec_init_val;
 }
 
-void StateEstimateFilter::estimate(const Eigen::MatrixXd vec_input_curr)
+void StateEstimateFilter::estimate(const Eigen::MatrixXd vec_input_curr, const MatrixXd vec_observation_curr)
 {
-  this->predict(vec_input_curr);  // 一段先予測
-  this->filter();                 // フィルタリング
+  this->predict(vec_input_curr);      // 一段先予測
+  this->filter(vec_observation_curr); // フィルタリング
 }

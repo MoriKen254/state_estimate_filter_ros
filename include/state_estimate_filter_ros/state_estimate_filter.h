@@ -13,10 +13,10 @@ public:
   StateEstimateFilter(ros::NodeHandle& nh);
   virtual ~StateEstimateFilter();
 
-  void estimate(const Eigen::MatrixXd vec_input_curr);
+  void estimate(const Eigen::MatrixXd vec_input_curr, const Eigen::MatrixXd vec_observation_curr);
   void setInitVal(const Eigen::MatrixXd vec_init_val);
   virtual void predict(const Eigen::MatrixXd vec_input_curr) = 0;
-  virtual void filter(void) = 0;
+  virtual void filter(const Eigen::MatrixXd vec_observation_curr) = 0;
 
  public:
   ros::NodeHandle nh_;
