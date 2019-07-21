@@ -5,15 +5,19 @@
 #include <random>
 #include <chrono>
 
+using Eigen::MatrixXd;
 using image_noise_mixer::ImageNoiseMixer;
+using state_estimate_filter_ros::StateEstimateFilter;
+using state_estimate_filter_ros::ParticleFilter;
 
 ImageNoiseMixer::ImageNoiseMixer(ros::NodeHandle& nh)
-  : nh_(nh)
+  : nh_(nh), init_flg_(true), image_sub_cnt_curr_(0)
 {
   image_transport::ImageTransport it(nh);
   img_sub_ = it.subscribe("/kinect2/hd/image_depth", 1,
                 &ImageNoiseMixer::imageCb, this);
   img_pub_ = it.advertise("/image_noise_mixer/image_depth_noise", 1);
+
 }
 
 void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
@@ -132,6 +136,42 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
 
   cv::Mat cv_img_edge_expand_u = cv::Mat::zeros(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
 
+  // pf init
+  if(init_flg_)
+  {
+
+    MatrixXd system_a(1, 1);
+    MatrixXd system_b(1, 1);
+    MatrixXd system_c(1, 1);
+    system_a(0, 0) = 1.0;
+    system_b(0, 0) = 0.0;
+    system_c(0, 0) = 1.0;
+
+    int num_particle = 100;
+    MatrixXd vec_weight(1, 1);
+    vec_weight(0, 0) = 1.0/static_cast<double>(num_particle);
+
+    MatrixXd vec_init_val(1, 1);
+
+    particle_filters.resize(height * width);
+    int index = 0;
+    for(int y = 0; y < height; y++)
+    {
+      for(int x = 0; x < width; x++)
+      {
+        vec_init_val(0, 0) = cv_img_ori_f.at<float>(y, x);
+        StateEstimateFilter* particle_filter = new ParticleFilter(nh_,
+                                                                  system_a, system_b, system_c,
+                                                                  num_particle, vec_init_val, vec_weight);
+        index = x + y * width;
+        particle_filters[index] = particle_filter;
+        // particle_filters.push_back(particle_filter);
+      }
+    }
+
+    init_flg_ = false;
+  }
+
   for(int y = 0; y < height; y++)
   {
     for(int x = 0; x < width; x++)
@@ -197,6 +237,33 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     }
   }
 
+
+  cv::Mat cv_img_noise_mixed_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  cv_img_noise_mixed_u.convertTo(cv_img_noise_mixed_f, CV_32FC1);
+
+  MatrixXd vec_input(1, 1);
+  MatrixXd vec_obs_curr(1, 1);
+  vec_input(0, 0) = 0.0;
+  cv::Mat cv_img_filtered_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+
+  for(int y = 0; y < height; y++)
+  {
+    for(int x = 0; x < width; x++)
+    {
+#if 1
+      vec_obs_curr(0, 0) = cv_img_noise_mixed_f.at<float>(y, x);
+
+      int index = x + y * width;
+      particle_filters[index]->estimate(vec_input, vec_obs_curr);
+
+      cv_img_filtered_f.at<float>(y, x) = particle_filters[index]->vec_estimate_curr_(0, 0);
+#endif
+    }
+  }
+
+  cv::Mat cv_img_filtered_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+  cv_img_filtered_f.convertTo(cv_img_filtered_u, CV_8UC1);
+
   auto a = cv_img_ori_f_ptr->image.at<unsigned char>(250, 200);
   auto b = cv_img_ori_u.at<unsigned char>(250, 200);
   //auto c = cv_img_only_noise.at<unsigned char>(250, 200);
@@ -205,36 +272,46 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   auto f = cv_img_edge_u.at<unsigned char>(250, 200);
 
   cv::imshow("cv_img_ori_u", cv_img_ori_u);
+  cv::imwrite( "/home/nishidalab/Pictures/depth_pf/cv_img_ori_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_ori_u );
   //cv::imshow("cv_img_ori_blur_u", cv_img_ori_blur_u);
   //cv::imshow("cv_img_only_noise_u", cv_img_only_noise_u);
   cv::imshow("cv_img_noise_mixed_u", cv_img_noise_mixed_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_mixed_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_noise_mixed_u);
   //cv::imshow("cv_img_edge_x_u", cv_img_edge_x_u);
   //cv::imshow("cv_img_edge_y_u", cv_img_edge_y_u);
   //cv::imshow("cv_img_edge_u", cv_img_edge_u);
   cv::imshow("cv_img_edge_expand_u", cv_img_edge_expand_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_edge_expand_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_edge_expand_u);
   //cv::imshow("cv_img_bin_u", cv_img_bin_u);
+  cv::imshow("cv_img_filtered_f", cv_img_filtered_f);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_f);
 
   // publisher
   sensor_msgs::ImagePtr msg_img_noise_mixed;
 
   msg_img_noise_mixed = cv_bridge::CvImage(std_msgs::Header(), "mono8", cv_img_noise_mixed_u).toImageMsg();
   img_pub_.publish(msg_img_noise_mixed);
+
+  image_sub_cnt_curr_++;
 }
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "opencv_ros");
-    ros::NodeHandle nh;
-    ImageNoiseMixer inm(nh);
+  ros::init(argc, argv, "opencv_ros");
+  ros::NodeHandle nh;
+  ImageNoiseMixer inm(nh);
 
-    ros::Rate looprate (5);   // read image at 5Hz
-    while (ros::ok())
-    {
-        if (cv::waitKey(1) == 'q')
-            break;
+  ros::Rate looprate (5);   // read image at 5Hz
+  while (ros::ok())
+  {
+    if (cv::waitKey(1) == 'q')
+      break;
 
-        ros::spinOnce();
-        looprate.sleep();
-    }
-    return 0;
+    if (inm.image_sub_cnt_curr_ > 100)
+      break;
+
+    ros::spinOnce();
+    looprate.sleep();
+  }
+  return 0;
 }
