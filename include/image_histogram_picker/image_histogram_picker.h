@@ -1,16 +1,15 @@
-#ifndef IMAGE_NOISE_MIXER_H
-#define IMAGE_NOISE_MIXER_H
+#ifndef IMAGE_HISTOGRAM_PICKER_H
+#define IMAGE_HISTOGRAM_PICKER_H
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <state_estimate_filter_ros/particle_filter.h>
 
-namespace image_noise_mixer
+namespace image_histogram_picker
 {
-class ImageNoiseMixer
+class ImageHistogramPicker
 {
 public:
-  ImageNoiseMixer(ros::NodeHandle& nh);
+  ImageHistogramPicker(ros::NodeHandle& nh);
 
 private:
   void imageCb(const sensor_msgs::Image::ConstPtr& msg);
@@ -22,10 +21,9 @@ private:
   ros::NodeHandle nh_;
   image_transport::Subscriber img_sub_;
   image_transport::Publisher img_pub_;
-  std::vector<state_estimate_filter_ros::StateEstimateFilter*> particle_filters;
   bool init_flg_;
   int count_result_;
 };
 }  // namespace image_noise_mixer
 
-#endif  // IMAGE_NOISE_MIXER_H
+#endif  // IMAGE_HISTOGRAM_PICKER_H

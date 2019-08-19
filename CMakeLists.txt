@@ -72,6 +72,12 @@ target_link_libraries(${PROJECT_NAME}_depth_sensor_distribution
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+add_executable(${PROJECT_NAME}_image_histogram_picker
+  src/image_histogram_picker/image_histogram_picker.cpp)
+target_link_libraries(${PROJECT_NAME}_image_histogram_picker
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES})
+
 add_executable(${PROJECT_NAME}_image_noise_mixer
   src/image_noise_mixer/image_noise_mixer.cpp
   src/particle_filter.cpp

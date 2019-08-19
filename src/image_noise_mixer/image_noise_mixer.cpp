@@ -5,13 +5,15 @@
 #include <random>
 #include <chrono>
 
+#include <fstream>
+
 using Eigen::MatrixXd;
 using image_noise_mixer::ImageNoiseMixer;
 using state_estimate_filter_ros::StateEstimateFilter;
 using state_estimate_filter_ros::ParticleFilter;
 
 ImageNoiseMixer::ImageNoiseMixer(ros::NodeHandle& nh)
-  : nh_(nh), init_flg_(true), image_sub_cnt_curr_(0)
+  : nh_(nh), init_flg_(true), image_sub_cnt_curr_(0), count_result_(0)
 {
   image_transport::ImageTransport it(nh);
   img_sub_ = it.subscribe("/kinect2/hd/image_depth", 1,
@@ -246,10 +248,23 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   vec_input(0, 0) = 0.0;
   cv::Mat cv_img_filtered_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
 
+  cv::Mat cv_img_filtered_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+
+  const char *file_name = "/home/nishidalab/temp/result.csv";
+  std::ofstream ofs;
+  //ofs.open(file_name, std::ios::app);
+  //ofs << "count,original,with_noise,filterd" << std::endl;
+  //ofs.close();
+
   for(int y = 0; y < height; y++)
   {
+    if(y != 37)
+      continue;
+
     for(int x = 0; x < width; x++)
     {
+      if(x != 157)
+        continue;
 #if 1
       uchar a = cv_img_noise_mixed_u.at<uchar>(y, x);
       vec_obs_curr(0, 0) = cv_img_noise_mixed_f.at<float>(y, x);
@@ -258,11 +273,20 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
       particle_filters[index]->estimate(vec_input, vec_obs_curr);
 
       cv_img_filtered_f.at<float>(y, x) = particle_filters[index]->vec_estimate_curr_(0, 0);
+
+      ofs.open(file_name, std::ios::app);
+
+      int ori = cv_img_ori_u.at<uchar>(y, x);
+      int noise = cv_img_noise_mixed_u.at<uchar>(y, x);
+      cv_img_filtered_f.convertTo(cv_img_filtered_u, CV_8UC1);
+      int filtered = cv_img_filtered_u.at<uchar>(y, x);
+      ofs << count_result_++ << "," << ori << "," << noise << "," << filtered << std::endl;
+
+      ofs.close();
 #endif
     }
   }
 
-  cv::Mat cv_img_filtered_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
   cv_img_filtered_f.convertTo(cv_img_filtered_u, CV_8UC1);
 
   auto a = cv_img_ori_f_ptr->image.at<unsigned char>(250, 200);
