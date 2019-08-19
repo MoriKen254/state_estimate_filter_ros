@@ -98,6 +98,16 @@ target_link_libraries(${PROJECT_NAME}_probability_distribution_run
   ${Eigen_LIBRARIES}
   ${PYTHON_LIBRARIES})
 
+add_executable(${PROJECT_NAME}_only_one_pix_pf_analizer
+  src/only_one_pix_pf_analizer/only_one_pix_pf_analizer.cpp
+  src/particle_filter.cpp
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp
+  src/state_estimate_filter.cpp)
+target_link_libraries(${PROJECT_NAME}_only_one_pix_pf_analizer
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES})
+
 add_executable(${PROJECT_NAME}_my_eigen_samples
   src/eigen_samples.cpp)
 target_link_libraries(${PROJECT_NAME}_my_eigen_samples
