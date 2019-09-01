@@ -246,9 +246,11 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   MatrixXd vec_input(1, 1);
   MatrixXd vec_obs_curr(1, 1);
   vec_input(0, 0) = 0.0;
-  cv::Mat cv_img_filtered_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  cv::Mat cv_img_filtered_pf_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  cv::Mat cv_img_filtered_pf_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
 
-  cv::Mat cv_img_filtered_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+  cv::Mat cv_img_filtered_kf_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  cv::Mat cv_img_filtered_kf_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
 
   const char *file_name = "/home/nishidalab/temp/result.csv";
   std::ofstream ofs;
@@ -272,22 +274,23 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
       int index = x + y * width;
       particle_filters[index]->estimate(vec_input, vec_obs_curr);
 
-      cv_img_filtered_f.at<float>(y, x) = particle_filters[index]->vec_estimate_curr_(0, 0);
+      cv_img_filtered_pf_f.at<float>(y, x) = particle_filters[index]->vec_estimate_curr_(0, 0);
 
       ofs.open(file_name, std::ios::app);
 
       int ori = cv_img_ori_u.at<uchar>(y, x);
       int noise = cv_img_noise_mixed_u.at<uchar>(y, x);
-      cv_img_filtered_f.convertTo(cv_img_filtered_u, CV_8UC1);
-      int filtered = cv_img_filtered_u.at<uchar>(y, x);
-      ofs << count_result_++ << "," << ori << "," << noise << "," << filtered << std::endl;
+      cv_img_filtered_pf_f.convertTo(cv_img_filtered_pf_u, CV_8UC1);
+      int filtered_pf = cv_img_filtered_pf_u.at<uchar>(y, x);
+
+      ofs << count_result_++ << "," << ori << "," << noise << "," << filtered_pf << std::endl;
 
       ofs.close();
 #endif
     }
   }
 
-  cv_img_filtered_f.convertTo(cv_img_filtered_u, CV_8UC1);
+  cv_img_filtered_pf_f.convertTo(cv_img_filtered_pf_u, CV_8UC1);
 
   auto a = cv_img_ori_f_ptr->image.at<unsigned char>(250, 200);
   auto b = cv_img_ori_u.at<unsigned char>(250, 200);
@@ -308,10 +311,10 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::imshow("cv_img_edge_expand_u", cv_img_edge_expand_u);
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_edge_expand_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_edge_expand_u);
   //cv::imshow("cv_img_bin_u", cv_img_bin_u);
-  cv::imshow("cv_img_filtered_u", cv_img_filtered_u);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_u);
-  cv::imshow("cv_img_filtered_f", cv_img_filtered_f);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_f);
+  cv::imshow("cv_img_filtered_u", cv_img_filtered_pf_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_u);
+  cv::imshow("cv_img_filtered_f", cv_img_filtered_pf_f);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_f);
 
   // publisher
   sensor_msgs::ImagePtr msg_img_noise_mixed;
