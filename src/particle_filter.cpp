@@ -33,7 +33,7 @@ ParticleFilter::ParticleFilter(ros::NodeHandle& nh,
   : StateEstimateFilter(nh), system_a_(system_a), system_b_(system_b), system_c_(system_c)
 {
   gen_system_.seed();
-  dist_type::param_type param(0.0, 1.0);
+  dist_type::param_type param(0.0, 0.7);
   dist_system_.param(param);
 
   initParicles(num_particle, state, weight);
