@@ -38,12 +38,21 @@ KalmanFilter::KalmanFilter(ros::NodeHandle& nh,
 
   initParicles(num_particle, state, weight);
 
+  vec_estimate_prev_ = state;
+
+  system_noise_var_ = MatrixXd::Zero(1, 1);
+  observe_noise_var_ = MatrixXd::Zero(1, 1);
+
   system_noise_var_ = MatrixXd::Zero(1, 1);
   observe_noise_var_ = MatrixXd::Zero(1, 1);
 
   prior_var_ = MatrixXd::Zero(1, 1);
   post_var_curr_ = MatrixXd::Zero(1, 1);
   post_var_prev_ = MatrixXd::Zero(1, 1);
+
+  prior_var_(0, 0) = 1.0;
+  post_var_curr_(0, 0) = 1.0;
+  post_var_prev_(0, 0) = 1.0;
 }
 
 void KalmanFilter::initParicles(const int num, const MatrixXd state, const MatrixXd weight)
@@ -80,7 +89,7 @@ void KalmanFilter::predict(const MatrixXd vec_input_curr)
 
 void KalmanFilter::filter(const MatrixXd vec_observation_curr)
 {
-  system_noise_var_(0, 0) = 3*3;
+  system_noise_var_(0, 0) = 1*1;
   observe_noise_var_(0, 0) = 5*5;
 
   MatrixXd kalman_gain(1, 1);
