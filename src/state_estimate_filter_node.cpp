@@ -1,9 +1,11 @@
 #include <state_estimate_filter_ros/state_estimate_filter.h>
+#include <state_estimate_filter_ros/kalman_filter.h>
 #include <state_estimate_filter_ros/particle_filter.h>
 #include <matplotlibcpp/matplotlibcpp.h>
 
 using state_estimate_filter_ros::StateEstimateFilter;
 using state_estimate_filter_ros::ParticleFilter;
+using state_estimate_filter_ros::KalmanFilter;
 using Eigen::MatrixXd;
 
 namespace plt = matplotlibcpp;
@@ -38,13 +40,16 @@ std::vector<double> genObservation(std::vector<double>& truth)
 }
 
 void run_matplot(const std::vector<double> time,
-                 const std::vector<double> truth, const std::vector<double> obs, const std::vector<double> estimate)
+                 const std::vector<double> truth, const std::vector<double> obs,
+                 const std::vector<double> estimate_pf, const std::vector<double> estimate_kf)
+
 {
   plt::xlim(-10.0, 70.0);
   plt::ylim(-10.0, 70.0);
-  plt::named_plot("true", time, truth, "r--");
+  plt::named_plot("true", time, truth, "k--");
   plt::named_plot("observation", time, obs, "b--");
-  plt::named_plot("estimate", time, estimate, "g-");
+  plt::named_plot("estimate_pf", time, estimate_pf, "g-");
+  plt::named_plot("estimate_kf", time, estimate_kf, "r-");
   plt::legend();
   plt::show();
 }
@@ -79,6 +84,9 @@ int main(int argc, char** argv)
   StateEstimateFilter* particle_filter = new ParticleFilter(nh,
                                                             system_a, system_b, system_c,
                                                             num_particle, vec_init_val, vec_weight);
+  StateEstimateFilter* kalman_filter = new KalmanFilter(nh,
+                                                        system_a, system_b, system_c,
+                                                        num_particle, vec_init_val, vec_weight);
   particle_filter->setInitVal(vec_init_val);
 
   ros::Rate loop_rate(1000);
@@ -87,7 +95,8 @@ int main(int argc, char** argv)
   MatrixXd obs_curr(1, 1);
   input(0, 0) = 0.0;
 
-  std::vector<double> estimate;
+  std::vector<double> estimate_kf;
+  std::vector<double> estimate_pf;
   int step_curr = 0;
   while (ros::ok())
   {
@@ -96,12 +105,16 @@ int main(int argc, char** argv)
       break;
 
     particle_filter->estimate(input, obs_curr);
-    estimate.push_back(particle_filter->vec_estimate_curr_(0, 0));
+    estimate_pf.push_back(particle_filter->vec_estimate_curr_(0, 0));
+
+    kalman_filter->estimate(input, obs_curr);
+    estimate_kf.push_back(kalman_filter->vec_estimate_curr_(0, 0));
+
     ros::spinOnce();
     loop_rate.sleep();
   }
 
-  run_matplot(time, truth, observation, estimate);
+  run_matplot(time, truth, observation, estimate_pf, estimate_kf);
 
   return 0;
 }

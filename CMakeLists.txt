@@ -47,6 +47,12 @@ target_link_libraries(${PROJECT_NAME}_state_estimate_filter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES})
 
+add_library(${PROJECT_NAME}_kalman_filter
+  src/kalman_filter.cpp)
+target_link_libraries(${PROJECT_NAME}_kalman_filter
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES})
+
 add_library(${PROJECT_NAME}_particle_filter
   src/particle_filter.cpp)
 target_link_libraries(${PROJECT_NAME}_particle_filter
@@ -114,6 +120,7 @@ target_link_libraries(${PROJECT_NAME}_my_eigen_samples
   ${Eigen_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_state_estimate_filter_node
+  src/kalman_filter.cpp
   src/particle_filter.cpp
   src/probability_distribution/normal_distribution.cpp
   src/probability_distribution/probability_distribution.cpp
