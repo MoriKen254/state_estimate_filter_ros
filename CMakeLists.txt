@@ -87,6 +87,7 @@ target_link_libraries(${PROJECT_NAME}_image_histogram_picker
 add_executable(${PROJECT_NAME}_image_noise_mixer
   src/image_noise_mixer/image_noise_mixer.cpp
   src/particle_filter.cpp
+  src/kalman_filter.cpp
   src/probability_distribution/normal_distribution.cpp
   src/probability_distribution/probability_distribution.cpp
   src/state_estimate_filter.cpp)
