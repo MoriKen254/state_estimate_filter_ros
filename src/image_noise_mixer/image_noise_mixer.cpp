@@ -11,6 +11,7 @@ using Eigen::MatrixXd;
 using image_noise_mixer::ImageNoiseMixer;
 using state_estimate_filter_ros::StateEstimateFilter;
 using state_estimate_filter_ros::ParticleFilter;
+using state_estimate_filter_ros::KalmanFilter;
 
 ImageNoiseMixer::ImageNoiseMixer(ros::NodeHandle& nh)
   : nh_(nh), init_flg_(true), image_sub_cnt_curr_(0), count_result_(0)
@@ -155,7 +156,8 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
 
     MatrixXd vec_init_val(1, 1);
 
-    particle_filters.resize(height * width);
+    particle_filters_.resize(height * width);
+    kalman_filters_.resize(height * width);
     int index = 0;
     for(int y = 0; y < height; y++)
     {
@@ -165,8 +167,12 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
         StateEstimateFilter* particle_filter = new ParticleFilter(nh_,
                                                                   system_a, system_b, system_c,
                                                                   num_particle, vec_init_val, vec_weight);
+        StateEstimateFilter* kalman_filter = new KalmanFilter(nh_,
+                                                              system_a, system_b, system_c,
+                                                              num_particle, vec_init_val, vec_weight);
         index = x + y * width;
-        particle_filters[index] = particle_filter;
+        particle_filters_[index] = particle_filter;
+        kalman_filters_[index] = kalman_filter;
         // particle_filters.push_back(particle_filter);
       }
     }
@@ -271,19 +277,27 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
       uchar a = cv_img_noise_mixed_u.at<uchar>(y, x);
       vec_obs_curr(0, 0) = cv_img_noise_mixed_f.at<float>(y, x);
 
-      int index = x + y * width;
-      particle_filters[index]->estimate(vec_input, vec_obs_curr);
+      if (vec_obs_curr(0, 0) > 200)
+        int aaa = 0;
 
-      cv_img_filtered_pf_f.at<float>(y, x) = particle_filters[index]->vec_estimate_curr_(0, 0);
+      int index = x + y * width;
+      particle_filters_[index]->estimate(vec_input, vec_obs_curr);
+      kalman_filters_[index]->estimate(vec_input, vec_obs_curr);
+
+      cv_img_filtered_pf_f.at<float>(y, x) = particle_filters_[index]->vec_estimate_curr_(0, 0);
+      cv_img_filtered_kf_f.at<float>(y, x) = kalman_filters_[index]->vec_estimate_curr_(0, 0);
 
       ofs.open(file_name, std::ios::app);
 
       int ori = cv_img_ori_u.at<uchar>(y, x);
       int noise = cv_img_noise_mixed_u.at<uchar>(y, x);
+
       cv_img_filtered_pf_f.convertTo(cv_img_filtered_pf_u, CV_8UC1);
       int filtered_pf = cv_img_filtered_pf_u.at<uchar>(y, x);
+      cv_img_filtered_kf_f.convertTo(cv_img_filtered_kf_u, CV_8UC1);
+      int filtered_kf = cv_img_filtered_kf_u.at<uchar>(y, x);
 
-      ofs << count_result_++ << "," << ori << "," << noise << "," << filtered_pf << std::endl;
+      ofs << count_result_++ << "," << ori << "," << noise << "," << filtered_pf << "," << filtered_kf << std::endl;
 
       ofs.close();
 #endif
@@ -312,9 +326,14 @@ void ImageNoiseMixer::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_edge_expand_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_edge_expand_u);
   //cv::imshow("cv_img_bin_u", cv_img_bin_u);
   cv::imshow("cv_img_filtered_u", cv_img_filtered_pf_u);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_pf_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_u);
   cv::imshow("cv_img_filtered_f", cv_img_filtered_pf_f);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_f);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_pf_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_f);
+  cv::imshow("cv_img_filtered_u", cv_img_filtered_kf_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_kf_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_u);
+  cv::imshow("cv_img_filtered_f", cv_img_filtered_kf_f);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/cv_img_filtered_kf_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_f);
+
 
   // publisher
   sensor_msgs::ImagePtr msg_img_noise_mixed;
