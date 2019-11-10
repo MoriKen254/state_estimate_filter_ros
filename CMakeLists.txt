@@ -95,6 +95,17 @@ target_link_libraries(${PROJECT_NAME}_image_noise_mixer
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES})
 
+add_executable(${PROJECT_NAME}_image_zeropix_filler
+  src/image_zeropix_filler/image_zeropix_filler.cpp
+  src/particle_filter.cpp
+  src/kalman_filter.cpp
+  src/probability_distribution/normal_distribution.cpp
+  src/probability_distribution/probability_distribution.cpp
+  src/state_estimate_filter.cpp)
+target_link_libraries(${PROJECT_NAME}_image_zeropix_filler
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES})
+
 add_executable(${PROJECT_NAME}_probability_distribution_run
   src/probability_distribution/depth_sensor_distribution.cpp
   src/probability_distribution/normal_distribution.cpp
