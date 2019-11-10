@@ -60,7 +60,6 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     }
   }
 
-  cv::Mat cv_img_zerofilled_f(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, cv_img_ori_f_ptr->image.type());
 
   cv::Mat cv_img_ori_u(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, CV_8U);
   cv_img_ori_f_ptr->image.convertTo(cv_img_ori_u, CV_8UC1, 255.0/max_f);
@@ -72,6 +71,10 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::Mat cv_img_zerofilled_u = cv_img_hist_equ_u.clone();
 
   cv::medianBlur(cv_img_hist_equ_u, cv_img_zerofilled_u, 5);
+
+  //cv::Mat cv_img_zerofilled_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  cv::Mat cv_img_zerofilled_f(cv_img_ori_f_ptr->image.rows, cv_img_ori_f_ptr->image.cols, cv_img_ori_f_ptr->image.type());
+  cv_img_zerofilled_u.convertTo(cv_img_zerofilled_f, CV_32FC1, 1.0/1.0);
 
   //for(int y = 0; y < cv_img_ori_u.rows; y++)
   //{
@@ -108,11 +111,13 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   // }
 
 
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_ori_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_ori_u);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_hist_equ_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_hist_equ_u);
-  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_zerofilled_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_zerofilled_u);
+  //cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_ori_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_ori_u);
+  //cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_hist_equ_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_hist_equ_u);
+  //cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_zerofilled_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_zerofilled_u);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_zerofilled_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_zerofilled_f);
 
 
+  //init_flg_ = false;
   // pf init
   if(init_flg_)
   {
@@ -137,7 +142,7 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     {
       for(int x = 0; x < width; x++)
       {
-        vec_init_val(0, 0) = static_cast<float>(cv_img_ori_u.at<uchar>(y, x));
+        vec_init_val(0, 0) = cv_img_zerofilled_f.at<float>(y, x);
         StateEstimateFilter* particle_filter = new ParticleFilter(nh_,
                                                                   system_a, system_b, system_c,
                                                                   num_particle, vec_init_val, vec_weight);
@@ -154,11 +159,49 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
     init_flg_ = false;
   }
 
+  MatrixXd vec_input(1, 1);
+  MatrixXd vec_obs_curr(1, 1);
+  vec_input(0, 0) = 0.0;
+
+  cv::Mat cv_img_filtered_pf_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  //cv::Mat cv_img_filtered_pf_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+
+  cv::Mat cv_img_filtered_kf_f(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_32FC1);
+  //cv::Mat cv_img_filtered_kf_u(cv_img_ori_u.rows, cv_img_ori_u.cols, CV_8UC1);
+
+  //const char *file_name = "/home/nishidalab/temp/result.csv";
+  //std::ofstream ofs;
+  for(int y = 0; y < height; y++)
+  {
+    for(int x = 0; x < width; x++)
+    {
+#if 1
+      // uchar a = cv_img_zerofilled_u.at<uchar>(y, x);
+      vec_obs_curr(0, 0) = cv_img_zerofilled_f.at<float>(y, x);
+
+      int index = x + y * width;
+      particle_filters_[index]->estimate(vec_input, vec_obs_curr);
+      kalman_filters_[index]->estimate(vec_input, vec_obs_curr);
+
+      float pf = particle_filters_[index]->vec_estimate_curr_(0, 0);
+      float kf = kalman_filters_[index]->vec_estimate_curr_(0, 0);
+      cv_img_filtered_pf_f.at<float>(y, x) = pf;
+      cv_img_filtered_kf_f.at<float>(y, x) = kf;
+
+#endif
+    }
+  }
+
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/pf/cv_img_filtered_pf_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_pf_f);
+  cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/kf/cv_img_filtered_kf_f_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_filtered_kf_f);
+
   // publisher
+  /*
   sensor_msgs::ImagePtr msg_img_zerofilled;
 
   msg_img_zerofilled = cv_bridge::CvImage(std_msgs::Header(), "mono8", cv_img_zerofilled_u).toImageMsg();
   img_pub_.publish(msg_img_zerofilled);
+  */
 
   image_sub_cnt_curr_++;
 }
