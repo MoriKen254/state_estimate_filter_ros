@@ -112,6 +112,48 @@ void ImageZeroPixFiller::imageCb(const sensor_msgs::Image::ConstPtr& msg)
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_hist_equ_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_hist_equ_u);
   cv::imwrite("/home/nishidalab/Pictures/depth_pf/191110/cv_img_zerofilled_u_" + std::to_string(image_sub_cnt_curr_) + ".png", cv_img_zerofilled_u);
 
+
+  // pf init
+  if(init_flg_)
+  {
+
+    MatrixXd system_a(1, 1);
+    MatrixXd system_b(1, 1);
+    MatrixXd system_c(1, 1);
+    system_a(0, 0) = 1.0;
+    system_b(0, 0) = 0.0;
+    system_c(0, 0) = 0.0;
+
+    int num_particle = 50;
+    MatrixXd vec_weight(1, 1);
+    vec_weight(0, 0) = 1.0/static_cast<double>(num_particle);
+
+    MatrixXd vec_init_val(1, 1);
+
+    particle_filters_.resize(height * width);
+    kalman_filters_.resize(height * width);
+    int index = 0;
+    for(int y = 0; y < height; y++)
+    {
+      for(int x = 0; x < width; x++)
+      {
+        vec_init_val(0, 0) = static_cast<float>(cv_img_ori_u.at<uchar>(y, x));
+        StateEstimateFilter* particle_filter = new ParticleFilter(nh_,
+                                                                  system_a, system_b, system_c,
+                                                                  num_particle, vec_init_val, vec_weight);
+        StateEstimateFilter* kalman_filter = new KalmanFilter(nh_,
+                                                              system_a, system_b, system_c,
+                                                              num_particle, vec_init_val, vec_weight);
+        index = x + y * width;
+        particle_filters_[index] = particle_filter;
+        kalman_filters_[index] = kalman_filter;
+        // particle_filters.push_back(particle_filter);
+      }
+    }
+
+    init_flg_ = false;
+  }
+
   // publisher
   sensor_msgs::ImagePtr msg_img_zerofilled;
 
